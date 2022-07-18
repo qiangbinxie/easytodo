@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    schema: classpath:db/schema.sql
+    data: classpath:db/data.sql
+    sql-script-encoding: UTF-8
+  jpa:
+    database: h2
+    show-sql: true
+    hibernate:
+      ddl-auto: update

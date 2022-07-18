@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.mucong.easytodo.ui.component.FootPane">
+  <grid id="27dc6" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="f886f" class="javax.swing.JLabel" binding="foot">
+        <constraints/>
+        <properties>
+          <text value="说明过程"/>
+        </properties>
+      </component>
+      <hspacer id="b06d3">
+        <constraints/>
+      </hspacer>
+      <vspacer id="7352a">
+        <constraints/>
+      </vspacer>
+    </children>
+  </grid>
+</form>
