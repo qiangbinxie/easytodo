@@ -1,5 +1,7 @@
 # easytodo
 
+[具体介绍](https://blog.csdn.net/weixin_39169535/article/details/125844737)
+
 ## 🎈概述
 在习惯使用springboot开发代码之后，在我们自己进行**桌面程序**编码的时候，发现很多的不方便，比如**连接数据库**，读取配置文件，**循环依赖**，日志记录，**定时任务**等等。这篇文章详细介绍了使用springboot搭建一个桌面程序easytodo，一个桌面便签和任务，使用jpa+h2作为本地存储，打包成windows应用。
 
