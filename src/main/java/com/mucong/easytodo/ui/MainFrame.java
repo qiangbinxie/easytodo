@@ -124,6 +124,7 @@ public class MainFrame extends JFrame {
 
         mainPane.updateHis();
 
+
     }
 
     public TitlePane getTitlePane() {

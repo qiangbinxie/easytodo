@@ -36,7 +36,6 @@ public class TaskDialog extends JDialog {
 
     private JScrollPane scrollPane;
 
-    private float opacity = 0.9f;
     private boolean isVisible = false;
 
 
@@ -45,11 +44,17 @@ public class TaskDialog extends JDialog {
         init();
     }
 
+    private int x = 200;
+    private int y = 200;
+    private int width=SystemUtil.width;
+    private int height=SystemUtil.height;
+    private float opacity = 0.6f;
+
     private void init() {
         //读取配置文件
         this.setUndecorated(true);
-        this.setOpacity(0.6f);
-        this.setBounds(200, 200, SystemUtil.width, SystemUtil.height);
+        this.setOpacity(opacity);
+        this.setBounds(x,y,width,height);
         this.setBackground(Color.white);
         this.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         JPanel title = new JPanel();
@@ -183,13 +188,20 @@ public class TaskDialog extends JDialog {
 
         java.util.List<Task> tasks = taskRespository.findAll(Example.of(new Task().setTaskState(TaskStateEnum.TODO)));
         if (tasks.isEmpty()) {
+            createTaskList();
+            ptextField.setBackground(Color.black);
+            ptextField.setBorder(null);
+            ptextField.setEnabled(false);
+            taskList.add(ptextField);
+            textField = null;
+            taskList.updateUI();
             return;
         }
+        createTaskList();
         taskList.removeAll();
         for (Task task : tasks) {
             taskList.add(new TaskDialog.TaskItemPane(1, task));
         }
-        createTaskList();
         ptextField.setBackground(Color.black);
         ptextField.setBorder(null);
         ptextField.setEnabled(false);
