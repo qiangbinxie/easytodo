@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-@Component
-@Configuration
+@Component("SystemConf")
 public class SystemConf {
     public static final String USER_HOME = System.getProperty("user.home");
     public static final String CONFIG_PATH = USER_HOME + File.separator + ".easytodo";

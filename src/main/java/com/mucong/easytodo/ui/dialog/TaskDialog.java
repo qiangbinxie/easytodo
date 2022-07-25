@@ -1,6 +1,7 @@
 package com.mucong.easytodo.ui.dialog;
 
 import com.mucong.easytodo.bean.Task;
+import com.mucong.easytodo.conf.SystemConf;
 import com.mucong.easytodo.constant.TaskStateEnum;
 import com.mucong.easytodo.respo.TaskRespository;
 import com.mucong.easytodo.ui.MainFrame;
@@ -8,7 +9,9 @@ import com.mucong.easytodo.ui.component.MainPane;
 import com.mucong.easytodo.ui.component.RoundButton;
 import com.mucong.easytodo.util.JTextFieldFocusTipListner;
 import com.mucong.easytodo.util.SystemUtil;
+import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +22,7 @@ import java.awt.event.*;
 import java.util.Date;
 
 @Component
+@DependsOn("SystemConf")
 public class TaskDialog extends JDialog {
     @Autowired
     private MainFrame mainFrame;
@@ -28,6 +32,9 @@ public class TaskDialog extends JDialog {
 
     @Autowired
     private TaskRespository taskRespository;
+
+    @Autowired
+    private SystemConf systemConf;
 
 
     private JPanel task;
@@ -41,17 +48,81 @@ public class TaskDialog extends JDialog {
 
     public TaskDialog() {
         dragmove();
-        init();
+
     }
 
+    //设置默认配置
     private int x = 200;
     private int y = 200;
     private int width=SystemUtil.width;
     private int height=SystemUtil.height;
     private float opacity = 0.6f;
+    private String nail = "false";
 
-    private void init() {
+
+
+    private final String LOCATIONX = "task.x";
+    private final String LOCATIONY = "task.y";
+    private final String WIDTHTASK = "task.width";
+    private final String HEIGHTTASK = "task.height";
+    private final String OPACITYCONF = "task.opacity";
+    private final String NAILCONF = "task.nail";
+
+    private void getConfig(){
+        String xconf = systemConf.getConf(LOCATIONX);
+        if(xconf!=null){
+            x = Integer.parseInt(xconf);
+        }
+        String yconf = systemConf.getConf(LOCATIONY);
+        if(yconf!=null){
+            y = Integer.parseInt(yconf);
+        }
+        String wconf = systemConf.getConf(WIDTHTASK);
+        if(wconf!=null){
+            width = Integer.parseInt(wconf);
+        }
+        String hconf = systemConf.getConf(HEIGHTTASK);
+        if(hconf!=null){
+            height = Integer.parseInt(hconf);
+        }
+        String opconf = systemConf.getConf(OPACITYCONF);
+        if(opconf!=null){
+            opacity = Float.parseFloat(opconf);
+        }
+        String nailconf = systemConf.getConf(NAILCONF);
+        if(nailconf!=null){
+            nail = nailconf;
+        }
+    }
+
+    private void saveLocation(){
+        int xd = this.getX();
+        int yd = this.getY();
+        systemConf.setConf(LOCATIONX,xd+"");
+        systemConf.setConf(LOCATIONY,yd+"");
+        systemConf.save();
+    }
+
+    private void saveSize(){
+        int xd = this.getWidth();
+        int yd = this.getHeight();
+        systemConf.setConf(WIDTHTASK,xd+"");
+        systemConf.setConf(HEIGHTTASK,yd+"");
+        systemConf.save();
+    }
+    private void saveNail(){
+        systemConf.setConf(NAILCONF,nail);
+        systemConf.save();
+    }
+    private void saveOpa(){
+        systemConf.setConf(OPACITYCONF,opacity+"");
+        systemConf.save();
+    }
+
+    public void init() {
         //读取配置文件
+        getConfig();
+        nailSet();
         this.setUndecorated(true);
         this.setOpacity(opacity);
         this.setBounds(x,y,width,height);
@@ -67,7 +138,7 @@ public class TaskDialog extends JDialog {
         titleCard2.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         title.setPreferredSize(new Dimension(SystemUtil.width, 40));
         titleCard2.setPreferredSize(new Dimension(SystemUtil.width, 40));
-        JLabel lable1 = createIconLable("/icon/nail.png", "固定");
+        JLabel lable1 = createIconLable("true".equals(nail)?"/icon/nail_on.png":"/icon/nail.png", "固定");
         JLabel lable2 = createIconLable("/icon/addnew.png", "添加任务");
         JLabel lable3 = createIconLable("/icon/Close.png", "关闭任务展示");
 
@@ -75,8 +146,25 @@ public class TaskDialog extends JDialog {
         titleCard2.add(lable2);
         titleCard2.add(lable3);
 
-
-
+        lable1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if("true".equals(nail)){
+                    nail = "false";
+                    ImageIcon icon = new ImageIcon(getClass().getResource("/icon/nail.png"));
+                    icon = new ImageIcon(icon.getImage().getScaledInstance(28, 28, Image.SCALE_DEFAULT));
+                    lable1.setIcon(icon);
+                }else{
+                    nail = "true";
+                    ImageIcon icon = new ImageIcon(getClass().getResource("/icon/nail_on.png"));
+                    icon = new ImageIcon(icon.getImage().getScaledInstance(28, 28, Image.SCALE_DEFAULT));
+                    lable1.setIcon(icon);
+                }
+                nailSet();
+                saveNail();
+            }
+        });
 
         //添加隐藏操作按钮，发现内部控件不好用
         /*this.addMouseListener(new MouseAdapter() {
@@ -125,6 +213,15 @@ public class TaskDialog extends JDialog {
         task.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         task.setBackground(Color.black);
         this.add(task);
+
+    }
+
+    private void nailSet() {
+        if("true".equals(nail)){
+            this.removeMouseMotionListener(dragListner);
+        }else{
+            this.addMouseMotionListener(dragListner);
+        }
 
     }
 
@@ -185,7 +282,6 @@ public class TaskDialog extends JDialog {
 
 
     public void loadTask() {
-
         java.util.List<Task> tasks = taskRespository.findAll(Example.of(new Task().setTaskState(TaskStateEnum.TODO)));
         if (tasks.isEmpty()) {
             createTaskList();
@@ -307,6 +403,7 @@ public class TaskDialog extends JDialog {
     int dragy = 0;
 
     //添加拖拽移动
+    MouseMotionListener dragListner = null;
     private void dragmove() {
         TaskDialog taskFrame = this;
         this.addMouseListener(new MouseAdapter() {
@@ -317,17 +414,44 @@ public class TaskDialog extends JDialog {
                 dragy = e.getY();
             }
 
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                Point point = taskFrame.getLocation();
+                if(point.x != x || point.y != y){
+                    saveLocation();
+                }
+                if(width != taskFrame.getWidth()||height != taskFrame.getHeight()){
+                    saveSize();
+                }
+            }
         });
-        this.addMouseMotionListener(new MouseMotionAdapter() {
+        dragListner = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                double left = e.getPoint().getX() - taskFrame.getX();
+                double top = e.getPoint().getY() - taskFrame.getY();
+                double buttom = taskFrame.getSize().getHeight() -e.getPoint().getY() ;
+                double right =  taskFrame.getSize().getWidth()-e.getPoint().getX();
+                System.out.println(left+":"+right+":"+top+":"+buttom);
+
+            }
+
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
-                Point point = taskFrame.getLocation();
-                int offsetx = e.getX() - dragx;
-                int offsety = e.getY() - dragy;
-                taskFrame.setLocation(point.x + offsetx, point.y + offsety);
+//                System.out.println(taskFrame.getCursor().getName());
+                if(taskFrame.getCursor().getType() == Cursor.DEFAULT_CURSOR){
+                    Point point = taskFrame.getLocation();
+                    int offsetx = e.getX() - dragx;
+                    int offsety = e.getY() - dragy;
+                    taskFrame.setLocation(point.x + offsetx, point.y + offsety );
+                }
+
             }
-        });
+        };
+
     }
 
 
