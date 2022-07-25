@@ -7,8 +7,8 @@ public class ColorTheme {
     public static final Color ORANGE = new Color(249, 171, 98);
 
     public enum Switch{
-        ON(0,"/icon/radio_on.png"),
-        OFF(1,"/icon/radio_off.png");
+        ON(1,"/icon/radio_on.png"),
+        OFF(0,"/icon/radio_off.png");
 
         private int val;
         private String path;

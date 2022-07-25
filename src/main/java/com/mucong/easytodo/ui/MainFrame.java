@@ -122,6 +122,20 @@ public class MainFrame extends JFrame {
         this.add(mainPane);
         this.add(footPane);
 
+        mainPane.updateHis();
+
+    }
+
+    public TitlePane getTitlePane() {
+        return titlePane;
+    }
+
+    public MainPane getMainPane() {
+        return mainPane;
+    }
+
+    public FootPane getFootPane() {
+        return footPane;
     }
 
     private void tray() {
