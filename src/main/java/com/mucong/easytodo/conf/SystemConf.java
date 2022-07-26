@@ -3,7 +3,6 @@ package com.mucong.easytodo.conf;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.setting.Setting;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
