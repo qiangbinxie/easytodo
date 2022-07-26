@@ -1,9 +1,14 @@
 package com.mucong.easytodo.ui.component;
 
+import com.mucong.easytodo.constant.ColorTheme;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
+/**
+ * 圆环按钮
+ */
 public class RoundButton extends JButton {
 
     private Shape shape = null;
@@ -23,7 +28,7 @@ public class RoundButton extends JButton {
             g.setColor(getBackground());
         }
         g.fillOval(0, 0, getSize().width - 1, getSize().height - 1);
-        g.setColor(Color.black);
+        g.setColor(ColorTheme.BLACK);
         g.fillOval(3, 3, getSize().width - 1-6, getSize().height - 1-6);
         super.paintComponents(g);
     }

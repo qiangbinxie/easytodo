@@ -29,7 +29,7 @@ public class EasytodoApp {
 
     public void createUI(){
         mainFrame.init();
-        mainFrame.setVisible(true);
+        mainFrame.setVisible(false);
         taskFrame.init();
         if(systemConf.getConf(SystemConf.SHOW_TASK)!=null&&systemConf.getConf(SystemConf.SHOW_TASK).equals("1")){
             taskFrame.showTask();

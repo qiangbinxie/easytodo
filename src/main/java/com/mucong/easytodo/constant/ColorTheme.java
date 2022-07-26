@@ -5,6 +5,8 @@ import java.awt.*;
 public class ColorTheme {
     public static final Color BLUE = new Color(119,163,229);
     public static final Color ORANGE = new Color(249, 171, 98);
+    public static final Color BLACK = new Color(0, 0, 0);
+    public static final Color WHITE = new Color(255, 255, 255);
 
     public enum Switch{
         ON(1,"/icon/radio_on.png"),

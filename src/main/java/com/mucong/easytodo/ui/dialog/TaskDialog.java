@@ -2,6 +2,7 @@ package com.mucong.easytodo.ui.dialog;
 
 import com.mucong.easytodo.bean.Task;
 import com.mucong.easytodo.conf.SystemConf;
+import com.mucong.easytodo.constant.ColorTheme;
 import com.mucong.easytodo.constant.TaskStateEnum;
 import com.mucong.easytodo.respo.TaskRespository;
 import com.mucong.easytodo.ui.MainFrame;
@@ -127,13 +128,13 @@ public class TaskDialog extends JDialog {
         this.setOpacity(opacity);
         this.setBounds(x,y,width,height);
         this.setBackground(Color.white);
-        this.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        this.setLayout(new BorderLayout());
         JPanel title = new JPanel();
         CardLayout cardLayout = new CardLayout();
         title.setLayout(cardLayout);
-        title.setBackground(Color.black);
+        title.setBackground(ColorTheme.BLACK);
         JPanel titleCard2 = new JPanel();
-        titleCard2.setBackground(Color.black);
+        titleCard2.setBackground(ColorTheme.BLACK);
 
         titleCard2.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         title.setPreferredSize(new Dimension(SystemUtil.width, 40));
@@ -162,6 +163,7 @@ public class TaskDialog extends JDialog {
                     lable1.setIcon(icon);
                 }
                 nailSet();
+                nailSetScroll();
                 saveNail();
             }
         });
@@ -205,24 +207,35 @@ public class TaskDialog extends JDialog {
             }
         });
         title.add(titleCard2);
-        this.add(title);
+        this.add(title,BorderLayout.NORTH);
 
         //task
         task = new JPanel();
         task.setPreferredSize(new Dimension(SystemUtil.width, SystemUtil.height - 40));
-        task.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        task.setBackground(Color.black);
-        this.add(task);
+        task.setLayout(new BorderLayout());
+        task.setBackground(ColorTheme.WHITE);
+        this.add(task,BorderLayout.CENTER);
+
 
     }
 
     private void nailSet() {
         if("true".equals(nail)){
+            this.removeMouseListener(dragMouseLsr);
             this.removeMouseMotionListener(dragListner);
         }else{
+            this.addMouseListener(dragMouseLsr);
             this.addMouseMotionListener(dragListner);
         }
-
+    }
+    private void nailSetScroll() {
+        if("true".equals(nail)){
+            taskList.removeMouseListener(dragMouseLsr);
+            taskList.removeMouseMotionListener(scrollMlsr);
+        }else{
+            taskList.addMouseListener(dragMouseLsr);
+            taskList.addMouseMotionListener(scrollMlsr);
+        }
     }
 
     private JTextArea textField = null;
@@ -285,7 +298,7 @@ public class TaskDialog extends JDialog {
         java.util.List<Task> tasks = taskRespository.findAll(Example.of(new Task().setTaskState(TaskStateEnum.TODO)));
         if (tasks.isEmpty()) {
             createTaskList();
-            ptextField.setBackground(Color.black);
+            ptextField.setBackground(ColorTheme.BLACK);
             ptextField.setBorder(null);
             ptextField.setEnabled(false);
             taskList.add(ptextField);
@@ -298,7 +311,7 @@ public class TaskDialog extends JDialog {
         for (Task task : tasks) {
             taskList.add(new TaskDialog.TaskItemPane(1, task));
         }
-        ptextField.setBackground(Color.black);
+        ptextField.setBackground(ColorTheme.BLACK);
         ptextField.setBorder(null);
         ptextField.setEnabled(false);
         taskList.add(ptextField);
@@ -324,7 +337,7 @@ public class TaskDialog extends JDialog {
             this.taskInfo = task;
             this.idx = idx;
             this.setPreferredSize(itemDimension);
-            this.setBackground(Color.black);
+            this.setBackground(ColorTheme.BLACK);
             this.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
             taskLabel = new JLabel(task.getName());
             taskLabel.setBorder(null);
@@ -358,7 +371,7 @@ public class TaskDialog extends JDialog {
             taskList = new JPanel();
             BoxLayout boxLayout = new BoxLayout(taskList, BoxLayout.Y_AXIS);
             taskList.setLayout(boxLayout);
-            taskList.setBackground(Color.black);
+            taskList.setBackground(ColorTheme.BLACK);
             scrollPane = new JScrollPane(taskList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scrollPane.setPreferredSize(new Dimension(SystemUtil.width - 50, SystemUtil.height - 60));
             scrollPane.setBorder(null);
@@ -367,13 +380,14 @@ public class TaskDialog extends JDialog {
                 @Override
                 public void paint(Graphics g, JComponent c) {
                     super.paint(g, c);
-                    g.setColor(Color.black);
+                    g.setColor(ColorTheme.BLACK);
                     int w = c.getWidth();
                     int h = c.getHeight();
                     g.fillRect(0, 0, w, h);
                 }
             });
-            task.add(scrollPane);
+            nailSetScroll();
+            task.add(scrollPane,BorderLayout.CENTER);
         }
     }
 
@@ -402,11 +416,13 @@ public class TaskDialog extends JDialog {
     int dragx = 0;
     int dragy = 0;
 
-    //添加拖拽移动
+    //添加拖拽移动修改窗口大小
     MouseMotionListener dragListner = null;
+    private MouseMotionListener scrollMlsr;
+    MouseListener dragMouseLsr = null;
     private void dragmove() {
         TaskDialog taskFrame = this;
-        this.addMouseListener(new MouseAdapter() {
+        dragMouseLsr = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
@@ -425,34 +441,174 @@ public class TaskDialog extends JDialog {
                     saveSize();
                 }
             }
-        });
+        };
         dragListner = new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 super.mouseMoved(e);
-                double left = e.getPoint().getX() - taskFrame.getX();
-                double top = e.getPoint().getY() - taskFrame.getY();
-                double buttom = taskFrame.getSize().getHeight() -e.getPoint().getY() ;
-                double right =  taskFrame.getSize().getWidth()-e.getPoint().getX();
-                System.out.println(left+":"+right+":"+top+":"+buttom);
+                double left = Math.abs(e.getPoint().getX());
+                double top = Math.abs(e.getPoint().getY());
+                double buttom = Math.abs(taskFrame.getSize().getHeight() - e.getPoint().getY());
+                double right = Math.abs(taskFrame.getSize().getWidth() - e.getPoint().getX());
+                double blur = 2.0;
+                if (left <blur && top < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR));
+                }else if(left < blur && buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR));
+                }else if(left < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+                }else if(right < blur && top < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR));
+                }else if(right < blur && buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+                }else if(right < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+                }else if(top < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+                }else if(buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+                }else{
+                    taskFrame.setCursor(null);
+                }
+
 
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
-//                System.out.println(taskFrame.getCursor().getName());
                 if(taskFrame.getCursor().getType() == Cursor.DEFAULT_CURSOR){
                     Point point = taskFrame.getLocation();
                     int offsetx = e.getX() - dragx;
                     int offsety = e.getY() - dragy;
-                    taskFrame.setLocation(point.x + offsetx, point.y + offsety );
+                    taskFrame.setLocation(point.x + offsetx, point.y + offsety);
+                    return;
                 }
-
+                Dimension dimension = taskFrame.getSize();
+                switch (taskFrame.getCursor().getType()) {
+                    case Cursor.E_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), dimension.getHeight());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.S_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth(), e.getY());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.SE_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), e.getY());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.N_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x, taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.W_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), dimension.getHeight());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y);
+                        break;
+                    case Cursor.NE_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x, taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.NW_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.SW_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y);
+                        break;
+                }
             }
         };
 
+
+        scrollMlsr = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                double left = Math.abs(e.getPoint().getX());
+                double buttom = Math.abs(taskFrame.getSize().getHeight() - e.getPoint().getY());
+                double right = Math.abs(taskFrame.getSize().getWidth() - e.getPoint().getX());
+                double blur = 2.0;
+                if(left < blur && buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR));
+                }else if(left < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+                }else if(right < blur && buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+                }else if(right < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+                }else if(buttom < blur){
+                    taskFrame.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+                }else{
+                    taskFrame.setCursor(null);
+                }
+
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                if(taskFrame.getCursor().getType() == Cursor.DEFAULT_CURSOR){
+                    Point point = taskFrame.getLocation();
+                    int offsetx = e.getX() - dragx;
+                    int offsety = e.getY() - dragy;
+                    taskFrame.setLocation(point.x + offsetx, point.y + offsety);
+                    return;
+                }
+                Dimension dimension = taskFrame.getSize();
+                switch (taskFrame.getCursor().getType()) {
+                    case Cursor.E_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), dimension.getHeight());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.S_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth(), e.getY());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.SE_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), e.getY());
+                        taskFrame.setSize(dimension);
+                        break;
+                    case Cursor.N_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x, taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.W_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), dimension.getHeight());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y);
+                        break;
+                    case Cursor.NE_RESIZE_CURSOR:
+                        dimension.setSize(e.getX(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x, taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.NW_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), dimension.getHeight() - e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y + e.getY());
+                        break;
+                    case Cursor.SW_RESIZE_CURSOR:
+                        dimension.setSize(dimension.getWidth() - e.getX(), e.getY());
+                        taskFrame.setSize(dimension);
+                        taskFrame.setLocation(taskFrame.getLocationOnScreen().x + e.getX(), taskFrame.getLocationOnScreen().y);
+                        break;
+                }
+            }
+        };
     }
+
+
+
 
 
 }
