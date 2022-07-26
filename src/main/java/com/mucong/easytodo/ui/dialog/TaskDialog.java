@@ -10,7 +10,6 @@ import com.mucong.easytodo.ui.component.MainPane;
 import com.mucong.easytodo.ui.component.RoundButton;
 import com.mucong.easytodo.util.JTextFieldFocusTipListner;
 import com.mucong.easytodo.util.SystemUtil;
-import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.domain.Example;
@@ -164,6 +163,7 @@ public class TaskDialog extends JDialog {
                 }
                 nailSet();
                 nailSetScroll();
+                nailSetField();
                 saveNail();
             }
         });
@@ -211,11 +211,10 @@ public class TaskDialog extends JDialog {
 
         //task
         task = new JPanel();
-        task.setPreferredSize(new Dimension(SystemUtil.width, SystemUtil.height - 40));
+//        task.setPreferredSize(new Dimension(getDialogWidth(), getDialogHeight() - 40));
         task.setLayout(new BorderLayout());
-        task.setBackground(ColorTheme.WHITE);
+        task.setBackground(ColorTheme.BLACK);
         this.add(task,BorderLayout.CENTER);
-
 
     }
 
@@ -235,6 +234,15 @@ public class TaskDialog extends JDialog {
         }else{
             taskList.addMouseListener(dragMouseLsr);
             taskList.addMouseMotionListener(scrollMlsr);
+        }
+    }
+    private void nailSetField() {
+        if("true".equals(nail)){
+            ptextField.removeMouseListener(dragMouseLsr);
+            ptextField.removeMouseMotionListener(scrollMlsr);
+        }else{
+            ptextField.addMouseListener(dragMouseLsr);
+            ptextField.addMouseMotionListener(scrollMlsr);
         }
     }
 
@@ -323,8 +331,16 @@ public class TaskDialog extends JDialog {
     /**
      * 封装任务列表每一条展示
      */
-    Dimension itemDimension = new Dimension(SystemUtil.width, 50);
+
     Font font;
+
+    private int getDialogWidth(){
+        return this.getWidth();
+    }
+    private int getDialogHeight(){
+        return this.getHeight();
+    }
+
 
     public class TaskItemPane extends JPanel {
         public int idx;
@@ -333,15 +349,17 @@ public class TaskDialog extends JDialog {
         public Task taskInfo;
 
         public TaskItemPane(int idx, Task task) {
-            font = new Font("微软雅黑", 0, 20);
+
+            Dimension itemDimension = new Dimension(getDialogWidth(), 50);
+            font = new Font("微软雅黑", Font.BOLD, 20);
             this.taskInfo = task;
             this.idx = idx;
             this.setPreferredSize(itemDimension);
             this.setBackground(ColorTheme.BLACK);
-            this.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            this.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
             taskLabel = new JLabel(task.getName());
             taskLabel.setBorder(null);
-            taskLabel.setPreferredSize(new Dimension(SystemUtil.width - 70, 50));
+            taskLabel.setPreferredSize(new Dimension(getDialogWidth() - 70, 50));
             taskLabel.setForeground(Color.white);
             taskLabel.setFont(font);
             this.add(taskLabel);
@@ -355,6 +373,17 @@ public class TaskDialog extends JDialog {
                 }
             });
             this.add(cplBtn);
+        }
+
+        public void updateWidth(){
+            System.out.println("更新大小"+taskInfo.getName()+":"+getDialogWidth());
+            Dimension dimension = this.getSize();
+            dimension.setSize(getDialogWidth(),dimension.height);
+            Dimension dimension1 = taskLabel.getSize();
+            dimension1.setSize(getDialogWidth()-70,dimension1.height);
+            taskLabel.setSize(dimension1);
+            this.setSize(dimension);
+            this.updateUI();
         }
     }
 
@@ -373,7 +402,7 @@ public class TaskDialog extends JDialog {
             taskList.setLayout(boxLayout);
             taskList.setBackground(ColorTheme.BLACK);
             scrollPane = new JScrollPane(taskList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setPreferredSize(new Dimension(SystemUtil.width - 50, SystemUtil.height - 60));
+//            scrollPane.setPreferredSize(new Dimension(getDialogWidth() - 50, getDialogHeight() - 60));
             scrollPane.setBorder(null);
             scrollPane.getVerticalScrollBar().setUnitIncrement(10);
             scrollPane.getVerticalScrollBar().setUI(new ScrollBarUI() {
@@ -387,6 +416,7 @@ public class TaskDialog extends JDialog {
                 }
             });
             nailSetScroll();
+            nailSetField();
             task.add(scrollPane,BorderLayout.CENTER);
         }
     }
@@ -607,8 +637,14 @@ public class TaskDialog extends JDialog {
         };
     }
 
-
-
+    private void updateChild() {
+        for(java.awt.Component component:taskList.getComponents()){
+            if(component instanceof TaskItemPane){
+                TaskItemPane ip = (TaskItemPane) component;
+                ip.updateWidth();
+            }
+        }
+    }
 
 
 }
