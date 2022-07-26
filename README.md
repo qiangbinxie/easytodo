@@ -17,3 +17,19 @@
 ## 🦜UI设计
 >使用figma工具设计的，具体页面地址  [easytodo页面设计](https://www.figma.com/file/JBLQJxrGSJqrUCOdlX9s0z/Untitled?node-id=11:2)，设计要求是颜色**冷淡为主**，主要颜色是**淡蓝**色和**白色**，用**橙色**作为点缀😏。设计了三个logo，个人比较喜欢第一个，可惜已经别人用了，最后采用的第三个，我没有去抄袭别人的图标，确实就是按照功能直接设计出来的，圆形打个勾勒表示任务完成。
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/fea7f0da47084a8ca99d107485975265.png)
+
+## 效果展示
+![效果展示](https://img-blog.csdnimg.cn/15a68a10630a491984de180ec8e7796b.gif)
+
+
+## 打包应用
+```shell
+pom文件中配置jre地址
+执行mvn package
+解压zip后，可以直接点击运行
+```
+
+![效果展示](https://img-blog.csdnimg.cn/5e6683afb30640f19da72fdc5ceb7888.png)
+
+
+
